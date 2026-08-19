@@ -1,0 +1,17 @@
+# Keep line endings stable between Windows development and Linux CI.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.pdf binary
+*.woff binary
+*.woff2 binary
+
+# Generated files: keep them out of pull request diffs by default.
+packages/api-client/openapi.json linguist-generated=true
+pnpm-lock.yaml linguist-generated=true
+apps/api/uv.lock linguist-generated=true

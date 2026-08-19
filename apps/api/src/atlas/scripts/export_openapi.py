@@ -21,7 +21,13 @@ def main() -> int:
 
     schema = app.openapi()
     # sort_keys makes the output stable, so the diff only shows real changes.
-    target.write_text(json.dumps(schema, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    # newline="\n" is required: without it Windows writes CRLF, the file differs from
+    # the one Linux CI generates, and the drift check fails for no real reason.
+    target.write_text(
+        json.dumps(schema, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+        newline="\n",
+    )
 
     sys.stdout.write(f"OpenAPI schema written to {target}\n")
     return 0
