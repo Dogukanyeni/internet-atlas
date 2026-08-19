@@ -1,0 +1,8 @@
+/* Minimal reset only. The real design system arrives in Phase 14. */
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: 2rem;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  line-height: 1.6;
+}

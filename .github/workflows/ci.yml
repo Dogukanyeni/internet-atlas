@@ -1,0 +1,141 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Work out what changed, so a documentation edit does not run the whole suite.
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      api: ${{ steps.filter.outputs.api }}
+      web: ${{ steps.filter.outputs.web }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            api:
+              - 'apps/api/**'
+              - 'db/**'
+              - '.github/workflows/ci.yml'
+            web:
+              - 'apps/web/**'
+              - 'packages/**'
+              - 'package.json'
+              - 'pnpm-workspace.yaml'
+              - '.github/workflows/ci.yml'
+
+  api:
+    needs: changes
+    if: needs.changes.outputs.api == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/api
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: atlas
+          POSTGRES_PASSWORD: atlas
+          POSTGRES_DB: atlas_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U atlas"
+          --health-interval 5s --health-timeout 3s --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 3s --health-retries 10
+
+    env:
+      ATLAS_ENV: local
+      ATLAS_SECRET_KEY: ci-secret-key-that-is-long-enough-0123456789
+      DATABASE_URL: postgresql+asyncpg://atlas:atlas@localhost:5432/atlas_test
+      REDIS_URL: redis://localhost:6379/1
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --all-extras
+
+      - name: Format check
+        run: uv run ruff format --check .
+
+      - name: Lint
+        run: uv run ruff check .
+
+      - name: Type check
+        run: uv run mypy src
+
+      - name: Tests
+        run: uv run pytest --cov=src/atlas --cov-report=term-missing
+
+      # ADR-011: the committed schema must match the code. If this step fails,
+      # run `make openapi` and commit the result.
+      - name: OpenAPI schema drift
+        run: |
+          uv run python -m atlas.scripts.export_openapi ../../packages/api-client/openapi.json
+          cd ../..
+          git diff --exit-code packages/api-client/openapi.json \
+            || (echo "::error::OpenAPI schema changed. Run 'make openapi' and commit the result." && exit 1)
+
+  web:
+    needs: changes
+    if: needs.changes.outputs.web == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm --filter @atlas/web lint
+
+      - name: Type check
+        run: pnpm --filter @atlas/web typecheck
+
+      - name: Build
+        run: pnpm --filter @atlas/web build
+
+  # One job that always runs, so branch protection has a single required check.
+  # Without this, a pull request that skips both jobs would wait forever.
+  ci:
+    needs: [api, web]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check results
+        run: |
+          if [ "${{ contains(needs.*.result, 'failure') }}" = "true" ]; then
+            echo "A job failed."
+            exit 1
+          fi
+          echo "All required jobs passed or were skipped."
