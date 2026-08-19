@@ -12,7 +12,7 @@ Phase definitions and exit criteria come from `Internet_Atlas_Detayli_Proje_Doku
 | 2 | User flows | I | ✅ | [02-user-flows.md](02-user-flows.md) |
 | 3 | Information architecture | I | ✅ | [03-information-architecture.md](03-information-architecture.md) |
 | 4 | Architecture decisions | II | ✅ | [04-architecture.md](04-architecture.md) + [14 ADRs](../adr/) |
-| 5 | Repository and standards | II | 🔵 | [05-repository.md](05-repository.md) — code done, waiting for `make setup` to run |
+| 5 | Repository and standards | II | 🔵 | [05-repository.md](05-repository.md) — all checks green; waiting on Docker for `make up` |
 | 6 | Domain model and contracts | II | ⬜ | Typed interfaces, OpenAPI, error model, pagination contract |
 | 7 | Database core | II | ⬜ | Migrations, ORM layer, seed script, DB integration tests |
 | 8 | Authentication | III | ⬜ | Register/login, email verification, roles, auth tests |

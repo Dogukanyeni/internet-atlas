@@ -137,10 +137,13 @@ never run.
 - [x] README, CONTRIBUTING, LOCAL_SETUP and ADR folder in place
 - [x] Pull request template with Definition of Done
 - [x] Git repository initialised with a clean first commit
-- [ ] **Open:** developer runs `make setup` successfully on this machine (needs Docker,
-      uv and pnpm installed — see [LOCAL_SETUP.md](../LOCAL_SETUP.md))
+- [x] Dependencies install and all checks pass on the developer machine
+      (ruff, mypy strict, 5 tests, eslint, tsc, production build)
+- [x] Pushed to GitHub: <https://github.com/Dogukanyeni/internet-atlas>
+- [ ] **Open:** Docker Desktop installed, so `make up` and a real database connection
+      can be verified (see [LOCAL_SETUP.md](../LOCAL_SETUP.md))
 
-**Phase 5 is closed once the setup runs on your machine. Next: Phase 6 — Domain model and data contracts.**
+**Phase 5 is closed once Docker runs the local services. Next: Phase 6 - Domain model and data contracts.**
 
 ---
 
