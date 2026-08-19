@@ -24,7 +24,7 @@ def redis_settings() -> RedisSettings:
 
 
 async def get_pool() -> ArqRedis:
-    global _pool  # noqa: PLW0603 - one pool per process is intended
+    global _pool
     if _pool is None:
         _pool = await create_pool(redis_settings())
     return _pool

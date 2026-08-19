@@ -47,7 +47,7 @@ async def _database_ok() -> bool:
     try:
         async with engine.connect() as conn:
             await conn.execute(text("SELECT 1"))
-    except Exception as exc:  # noqa: BLE001 - report, do not crash the check
+    except Exception as exc:
         logger.warning("readiness_database_failed", error=str(exc))
         return False
     return True

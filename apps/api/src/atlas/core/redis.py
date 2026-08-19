@@ -20,7 +20,8 @@ SESSION_PREFIX: Final = "sess:"
 
 _settings = get_settings()
 
-redis_client: aioredis.Redis = aioredis.from_url(
+# redis-py ships no type information for the async `from_url` helper.
+redis_client: aioredis.Redis = aioredis.from_url(  # type: ignore[no-untyped-call]
     _settings.redis_url.get_secret_value(),
     encoding="utf-8",
     decode_responses=True,
@@ -32,5 +33,5 @@ async def ping() -> bool:
     """Used by the readiness check. Never raises."""
     try:
         return bool(await redis_client.ping())
-    except Exception:  # noqa: BLE001 - a failed ping is an answer, not an error
+    except Exception:
         return False

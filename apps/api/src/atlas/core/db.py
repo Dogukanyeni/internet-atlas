@@ -9,7 +9,12 @@ Rule from ADR-006: lazy loading is off. Relationships must be loaded on purpose 
 
 from collections.abc import AsyncGenerator
 
-from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 
 from atlas.core.config import get_settings
 

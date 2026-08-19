@@ -9,17 +9,15 @@ import os
 os.environ.setdefault("ATLAS_ENV", "local")
 os.environ.setdefault("ATLAS_DEBUG", "true")
 os.environ.setdefault("ATLAS_SECRET_KEY", "test-secret-key-that-is-long-enough-123456")
-os.environ.setdefault(
-    "DATABASE_URL", "postgresql+asyncpg://atlas:atlas@localhost:5432/atlas_test"
-)
+os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://atlas:atlas@localhost:5432/atlas_test")
 os.environ.setdefault("REDIS_URL", "redis://localhost:6379/1")
 
-from collections.abc import AsyncGenerator  # noqa: E402
+from collections.abc import AsyncGenerator
 
-import pytest  # noqa: E402
-from httpx import ASGITransport, AsyncClient  # noqa: E402
+import pytest
+from httpx import ASGITransport, AsyncClient
 
-from atlas.main import app  # noqa: E402
+from atlas.main import app
 
 
 @pytest.fixture

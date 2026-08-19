@@ -77,4 +77,4 @@ class Settings(BaseSettings):
 @lru_cache
 def get_settings() -> Settings:
     """Read settings once per process."""
-    return Settings()  # type: ignore[call-arg]
+    return Settings()

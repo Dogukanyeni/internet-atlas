@@ -1,7 +1,20 @@
-import next from "eslint-config-next";
+import { dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 
-export default [
-  ...next(),
+import { FlatCompat } from "@eslint/eslintrc";
+
+// eslint-config-next 15.x is still a legacy (eslintrc) config, so it has to be
+// bridged into ESLint 9 flat config with FlatCompat. create-next-app generates the
+// same thing. When the package ships a real flat config, this file gets shorter.
+const compat = new FlatCompat({
+  baseDirectory: dirname(fileURLToPath(import.meta.url)),
+});
+
+const eslintConfig = [
+  {
+    ignores: [".next/**", "node_modules/**", "next-env.d.ts"],
+  },
+  ...compat.extends("next/core-web-vitals", "next/typescript"),
   {
     rules: {
       "no-console": ["warn", { allow: ["warn", "error"] }],
@@ -9,3 +22,5 @@ export default [
     },
   },
 ];
+
+export default eslintConfig;

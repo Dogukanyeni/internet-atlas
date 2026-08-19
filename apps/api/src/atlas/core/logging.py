@@ -9,19 +9,19 @@ import logging
 import sys
 import uuid
 from contextvars import ContextVar
-from typing import Any
 
 import structlog
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.responses import Response
+from structlog.typing import EventDict, WrappedLogger
 
 request_id_var: ContextVar[str] = ContextVar("request_id", default="-")
 
 REQUEST_ID_HEADER = "X-Request-ID"
 
 
-def _add_request_id(_: Any, __: str, event_dict: dict[str, Any]) -> dict[str, Any]:
+def _add_request_id(_: WrappedLogger, __: str, event_dict: EventDict) -> EventDict:
     event_dict["request_id"] = request_id_var.get()
     return event_dict
 
