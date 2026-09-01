@@ -106,6 +106,23 @@ The fourth job exists to avoid a common trap: if the only required checks are jo
 can be skipped, a documentation-only pull request waits forever for a check that will
 never run.
 
+### Known blocker (2026-09-01)
+
+CI is configured correctly and GitHub reads the workflow (`name: CI`, state `active`),
+but no job can start. GitHub returns:
+
+> The job was not started because your account is locked due to a billing issue.
+
+This is an account-level lock, not a repository or code problem. It affects public and
+private repositories the same way. Until it is resolved at
+<https://github.com/settings/billing>, run the same checks locally:
+
+```bash
+make check
+```
+
+`make check` runs exactly what the CI `api` and `web` jobs run.
+
 ## 6. Secrets
 
 - Everything is an environment variable. `.env.example` is the full list.
@@ -131,7 +148,9 @@ never run.
 
 - [x] Monorepo structure created, matching ADR-014
 - [x] One-command local setup (`make setup`, `make up`, `make api`)
-- [x] Lint, format, type check and tests run locally and in CI
+- [x] Lint, format, type check and tests run locally
+- [~] The same checks in CI — pipeline is written and valid, but blocked by a GitHub
+      account billing lock (see section 5)
 - [x] Commit hooks installed, including conventional commits
 - [x] Environment variable schema written and validated at boot
 - [x] README, CONTRIBUTING, LOCAL_SETUP and ADR folder in place
