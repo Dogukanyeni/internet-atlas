@@ -16,6 +16,7 @@ from atlas.core.errors import register_error_handlers
 from atlas.core.logging import RequestIdMiddleware, configure_logging, get_logger
 from atlas.core.redis import redis_client
 from atlas.modules.health.router import router as health_router
+from atlas.modules.meta.router import router as meta_router
 
 settings = get_settings()
 configure_logging(json_output=settings.env is not Environment.LOCAL)
@@ -57,6 +58,9 @@ register_error_handlers(app)
 # --- Modules -----------------------------------------------------------------
 # Health is not versioned: platforms and monitors expect a stable path.
 app.include_router(health_router)
+
+# Everything else lives under the versioned prefix.
+app.include_router(meta_router, prefix=API_PREFIX)
 
 # Product modules are added here as their phases arrive:
 #   catalog  (Phase 9)    taxonomy (Phase 10)   graph  (Phase 11)

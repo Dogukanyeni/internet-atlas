@@ -279,7 +279,7 @@ stateDiagram-v2
 
 | # | Question | Answered in |
 |---|---|---|
-| Q10 | UUID or ULID for internal ids | Phase 6 |
+| Q10 | UUID or ULID for internal ids | Phase 6 ✅ (UUIDv7) |
 | Q11 | Do Topics need their own `kind` field (concept, technique, use case)? | Phase 10, after seeding |
 | Q12 | Should `weight` be set by hand or calculated from signals? | Phase 25 |
 | Q13 | How many Categories are too many before filtering gets confusing? | Phase 18 |

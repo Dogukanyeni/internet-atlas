@@ -13,7 +13,7 @@ Phase definitions and exit criteria come from `Internet_Atlas_Detayli_Proje_Doku
 | 3 | Information architecture | I | ✅ | [03-information-architecture.md](03-information-architecture.md) |
 | 4 | Architecture decisions | II | ✅ | [04-architecture.md](04-architecture.md) + [14 ADRs](../adr/) |
 | 5 | Repository and standards | II | 🔵 | [05-repository.md](05-repository.md) — all checks green; waiting on Docker for `make up` |
-| 6 | Domain model and contracts | II | ⬜ | Typed interfaces, OpenAPI, error model, pagination contract |
+| 6 | Domain model and contracts | II | ✅ | [06-domain-contracts.md](06-domain-contracts.md) |
 | 7 | Database core | II | ⬜ | Migrations, ORM layer, seed script, DB integration tests |
 | 8 | Authentication | III | ⬜ | Register/login, email verification, roles, auth tests |
 | 9 | Website domain model | III | ⬜ | Website CRUD, validation, duplicate detection |
@@ -91,6 +91,16 @@ Phase definitions and exit criteria come from `Internet_Atlas_Detayli_Proje_Doku
 | R-05 | Pull requests carry the Definition of Done and the vision guardrails | 5 |
 | R-06 | CI is path-aware, with one always-running gate job | 5 |
 | R-07 | Structured logging and request ids exist from the first commit | 5 |
+| C-01 | Ids are **UUIDv7**, generated in the application (answers Q10) | 6 |
+| C-02 | Public responses never expose `created_by`, `updated_by` or `version` | 6 |
+| C-03 | Updates use optimistic locking through `version` | 6 |
+| C-04 | One error envelope with a machine `code` and the `request_id` | 6 |
+| C-05 | Cursor pagination for anything that can grow; offset only for admin tables | 6 |
+| C-06 | An unknown sort field is rejected, never ignored | 6 |
+| C-07 | Filters use slugs, not ids | 6 |
+| C-08 | Lists are `[]` never `null`; unknown input fields are rejected | 6 |
+| C-09 | Relation validity lives in `domain/relations.py`, served at `/meta/enums` | 6 |
+| C-10 | Domain models are published in OpenAPI before their endpoints exist | 6 |
 
 ## Do-not-do-early list (from the source document)
 

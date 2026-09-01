@@ -1,6 +1,68 @@
 {
   "components": {
     "schemas": {
+      "ArchiveReason": {
+        "description": "Why an object was archived. Shown to users as a badge.",
+        "enum": [
+          "dead_site",
+          "merged",
+          "removed",
+          "superseded"
+        ],
+        "title": "ArchiveReason",
+        "type": "string"
+      },
+      "CategorySummary": {
+        "additionalProperties": false,
+        "description": "A filtering drawer. Editors only; never created by users.",
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "parent_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Parent Id"
+          },
+          "slug": {
+            "title": "Slug",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "created_at",
+          "updated_at",
+          "name"
+        ],
+        "title": "CategorySummary",
+        "type": "object"
+      },
       "DependencyStatus": {
         "properties": {
           "database": {
@@ -17,6 +79,241 @@
           "redis"
         ],
         "title": "DependencyStatus",
+        "type": "object"
+      },
+      "Direction": {
+        "enum": [
+          "directed",
+          "undirected"
+        ],
+        "title": "Direction",
+        "type": "string"
+      },
+      "EntityRef": {
+        "additionalProperties": false,
+        "description": "A light pointer to another object.\n\nUsed anywhere we mention something without sending the whole record: relation ends,\ngraph nodes, search results, breadcrumbs. It carries exactly what a link needs -\nwhat it is, how to fetch it, and what to show.",
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "slug": {
+            "title": "Slug",
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/EntityType"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "slug",
+          "name"
+        ],
+        "title": "EntityRef",
+        "type": "object"
+      },
+      "EntityType": {
+        "description": "Every kind of object that can be referenced by id in the API.",
+        "enum": [
+          "website",
+          "topic",
+          "technology",
+          "category",
+          "path",
+          "collection"
+        ],
+        "title": "EntityType",
+        "type": "string"
+      },
+      "EnumsResponse": {
+        "properties": {
+          "entity_types": {
+            "items": {
+              "$ref": "#/components/schemas/EntityType"
+            },
+            "title": "Entity Types",
+            "type": "array"
+          },
+          "node_types": {
+            "items": {
+              "$ref": "#/components/schemas/EntityType"
+            },
+            "title": "Node Types",
+            "type": "array"
+          },
+          "provenances": {
+            "items": {
+              "$ref": "#/components/schemas/Provenance"
+            },
+            "title": "Provenances",
+            "type": "array"
+          },
+          "publication_statuses": {
+            "items": {
+              "$ref": "#/components/schemas/PublicationStatus"
+            },
+            "title": "Publication Statuses",
+            "type": "array"
+          },
+          "relation_types": {
+            "items": {
+              "$ref": "#/components/schemas/RelationTypeInfo"
+            },
+            "title": "Relation Types",
+            "type": "array"
+          },
+          "website_kinds": {
+            "items": {
+              "$ref": "#/components/schemas/WebsiteKind"
+            },
+            "title": "Website Kinds",
+            "type": "array"
+          }
+        },
+        "required": [
+          "entity_types",
+          "node_types",
+          "website_kinds",
+          "publication_statuses",
+          "provenances",
+          "relation_types"
+        ],
+        "title": "EnumsResponse",
+        "type": "object"
+      },
+      "GraphEdge": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "source_id": {
+            "format": "uuid",
+            "title": "Source Id",
+            "type": "string"
+          },
+          "target_id": {
+            "format": "uuid",
+            "title": "Target Id",
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/RelationType"
+          },
+          "weight": {
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Weight",
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "source_id",
+          "target_id",
+          "weight"
+        ],
+        "title": "GraphEdge",
+        "type": "object"
+      },
+      "GraphNeighborhood": {
+        "additionalProperties": false,
+        "description": "The answer to `GET /graph/neighbors/{id}`.\n\n`truncated` is part of the contract, not an afterthought: the map must be able to\ntell the user \"there is more here\" instead of quietly hiding nodes. Limits come from\ndecision A-10 \u2014 depth 3, 300 nodes.",
+        "properties": {
+          "depth": {
+            "maximum": 3,
+            "minimum": 1,
+            "title": "Depth",
+            "type": "integer"
+          },
+          "edges": {
+            "items": {
+              "$ref": "#/components/schemas/GraphEdge"
+            },
+            "title": "Edges",
+            "type": "array"
+          },
+          "focus": {
+            "$ref": "#/components/schemas/EntityRef"
+          },
+          "nodes": {
+            "items": {
+              "$ref": "#/components/schemas/GraphNode"
+            },
+            "title": "Nodes",
+            "type": "array"
+          },
+          "truncated": {
+            "default": false,
+            "title": "Truncated",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "focus",
+          "depth",
+          "nodes",
+          "edges"
+        ],
+        "title": "GraphNeighborhood",
+        "type": "object"
+      },
+      "GraphNode": {
+        "additionalProperties": false,
+        "description": "A node as the map draws it. Deliberately tiny \u2014 hundreds travel at once.",
+        "properties": {
+          "degree": {
+            "description": "How many published relations this node has.",
+            "minimum": 0,
+            "title": "Degree",
+            "type": "integer"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WebsiteKind"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "slug": {
+            "title": "Slug",
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/EntityType"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "slug",
+          "name",
+          "degree"
+        ],
+        "title": "GraphNode",
         "type": "object"
       },
       "InfoResponse": {
@@ -56,6 +353,28 @@
         "title": "LiveResponse",
         "type": "object"
       },
+      "Provenance": {
+        "description": "Where a fact came from.\n\nEvery published relation must carry this (data-quality target D2). It is also what\nlets us find and remove everything one bad source produced.",
+        "enum": [
+          "editorial",
+          "crawler",
+          "detector",
+          "ai",
+          "community"
+        ],
+        "title": "Provenance",
+        "type": "string"
+      },
+      "PublicationStatus": {
+        "description": "Lifecycle of any editorial object (Phase 3, section 6).\n\nThere is no `deleted`. Public content is archived, never hard deleted (I-06).",
+        "enum": [
+          "draft",
+          "published",
+          "archived"
+        ],
+        "title": "PublicationStatus",
+        "type": "string"
+      },
       "ReadyResponse": {
         "properties": {
           "dependencies": {
@@ -76,6 +395,1077 @@
         ],
         "title": "ReadyResponse",
         "type": "object"
+      },
+      "RelationCreate": {
+        "additionalProperties": false,
+        "description": "Creating an edge.\n\n`provenance` and `confidence` are required, with no default. A default would let an\nunsourced fact enter the graph quietly, and data-quality target D2 says every\npublished relation must say where it came from.",
+        "properties": {
+          "confidence": {
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence",
+            "type": "number"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Note"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance"
+          },
+          "source_id": {
+            "format": "uuid",
+            "title": "Source Id",
+            "type": "string"
+          },
+          "source_type": {
+            "$ref": "#/components/schemas/EntityType"
+          },
+          "target_id": {
+            "format": "uuid",
+            "title": "Target Id",
+            "type": "string"
+          },
+          "target_type": {
+            "$ref": "#/components/schemas/EntityType"
+          },
+          "type": {
+            "$ref": "#/components/schemas/RelationType"
+          },
+          "weight": {
+            "default": 0.5,
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Weight",
+            "type": "number"
+          }
+        },
+        "required": [
+          "source_id",
+          "source_type",
+          "target_id",
+          "target_type",
+          "type",
+          "provenance",
+          "confidence"
+        ],
+        "title": "RelationCreate",
+        "type": "object"
+      },
+      "RelationGroup": {
+        "additionalProperties": false,
+        "description": "Relations of one type, grouped so the page can render sections directly.",
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/RelationView"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "total": {
+            "minimum": 0,
+            "title": "Total",
+            "type": "integer"
+          },
+          "type": {
+            "$ref": "#/components/schemas/RelationType"
+          }
+        },
+        "required": [
+          "type",
+          "label",
+          "items",
+          "total"
+        ],
+        "title": "RelationGroup",
+        "type": "object"
+      },
+      "RelationType": {
+        "description": "The relation dictionary from Phase 3.\n\nDirection and allowed node pairs are defined in `atlas.domain.relations`, not here,\nso the rules live next to the code that enforces them.",
+        "enum": [
+          "belongs_to",
+          "built_with",
+          "provides",
+          "alternative_to",
+          "competitor_of",
+          "integrates_with",
+          "part_of",
+          "related_to",
+          "replaced_by",
+          "inspired_by",
+          "recommends"
+        ],
+        "title": "RelationType",
+        "type": "string"
+      },
+      "RelationTypeInfo": {
+        "properties": {
+          "allowed_pairs": {
+            "items": {
+              "items": {
+                "$ref": "#/components/schemas/EntityType"
+              },
+              "type": "array"
+            },
+            "title": "Allowed Pairs",
+            "type": "array"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "direction": {
+            "$ref": "#/components/schemas/Direction"
+          },
+          "inverse_label": {
+            "title": "Inverse Label",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/RelationType"
+          }
+        },
+        "required": [
+          "type",
+          "direction",
+          "label",
+          "inverse_label",
+          "description",
+          "allowed_pairs"
+        ],
+        "title": "RelationTypeInfo",
+        "type": "object"
+      },
+      "RelationView": {
+        "additionalProperties": false,
+        "description": "One edge, as the interface shows it.",
+        "properties": {
+          "confidence": {
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence",
+            "type": "number"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Note"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance"
+          },
+          "target": {
+            "$ref": "#/components/schemas/EntityRef"
+          },
+          "type": {
+            "$ref": "#/components/schemas/RelationType"
+          },
+          "weight": {
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Weight",
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "label",
+          "target",
+          "weight",
+          "confidence",
+          "provenance"
+        ],
+        "title": "RelationView",
+        "type": "object"
+      },
+      "TechnologyDetail": {
+        "additionalProperties": false,
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "homepage_url": {
+            "anyOf": [
+              {
+                "format": "uri",
+                "maxLength": 2083,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Homepage Url"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "long_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Long Description"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "short_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Short Description"
+          },
+          "slug": {
+            "title": "Slug",
+            "type": "string"
+          },
+          "topics": {
+            "items": {
+              "$ref": "#/components/schemas/TopicSummary"
+            },
+            "title": "Topics",
+            "type": "array"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          },
+          "website_count": {
+            "minimum": 0,
+            "title": "Website Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "created_at",
+          "updated_at",
+          "name",
+          "website_count"
+        ],
+        "title": "TechnologyDetail",
+        "type": "object"
+      },
+      "TechnologySummary": {
+        "additionalProperties": false,
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "short_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Short Description"
+          },
+          "slug": {
+            "title": "Slug",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          },
+          "website_count": {
+            "minimum": 0,
+            "title": "Website Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "created_at",
+          "updated_at",
+          "name",
+          "website_count"
+        ],
+        "title": "TechnologySummary",
+        "type": "object"
+      },
+      "TopicDetail": {
+        "additionalProperties": false,
+        "properties": {
+          "children": {
+            "items": {
+              "$ref": "#/components/schemas/TopicSummary"
+            },
+            "title": "Children",
+            "type": "array"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "featured_websites": {
+            "items": {
+              "$ref": "#/components/schemas/WebsiteSummary"
+            },
+            "title": "Featured Websites",
+            "type": "array"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "long_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Long Description"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "parent": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EntityRef"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "related_topics": {
+            "items": {
+              "$ref": "#/components/schemas/TopicSummary"
+            },
+            "title": "Related Topics",
+            "type": "array"
+          },
+          "short_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Short Description"
+          },
+          "slug": {
+            "title": "Slug",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          },
+          "website_count": {
+            "minimum": 0,
+            "title": "Website Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "created_at",
+          "updated_at",
+          "name",
+          "website_count"
+        ],
+        "title": "TopicDetail",
+        "type": "object"
+      },
+      "TopicSummary": {
+        "additionalProperties": false,
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "short_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Short Description"
+          },
+          "slug": {
+            "title": "Slug",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          },
+          "website_count": {
+            "minimum": 0,
+            "title": "Website Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "created_at",
+          "updated_at",
+          "name",
+          "website_count"
+        ],
+        "title": "TopicSummary",
+        "type": "object"
+      },
+      "WebsiteCreate": {
+        "additionalProperties": false,
+        "description": "Admin input. Note what is missing: no id, no status, no quality score.\n\nThe server owns those. Letting a client choose an id or publish directly would move\neditorial rules out of the service layer, which is where they belong.",
+        "properties": {
+          "canonical_url": {
+            "format": "uri",
+            "maxLength": 2083,
+            "minLength": 1,
+            "title": "Canonical Url",
+            "type": "string"
+          },
+          "category_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "minItems": 1,
+            "title": "Category Ids",
+            "type": "array"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/WebsiteKind"
+          },
+          "launch_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Launch Date"
+          },
+          "long_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Long Description"
+          },
+          "name": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "organization_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Organization Name"
+          },
+          "short_description": {
+            "maxLength": 160,
+            "minLength": 10,
+            "title": "Short Description",
+            "type": "string"
+          },
+          "slug": {
+            "anyOf": [
+              {
+                "maxLength": 60,
+                "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Generated from the name when not given.",
+            "title": "Slug"
+          },
+          "topic_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Topic Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "name",
+          "canonical_url",
+          "kind",
+          "short_description",
+          "category_ids"
+        ],
+        "title": "WebsiteCreate",
+        "type": "object"
+      },
+      "WebsiteDetail": {
+        "additionalProperties": false,
+        "description": "Everything one website page needs, in one response.\n\nThe detail page must answer four questions on one screen (Phase 2, F1): what is it,\nwhich area, what is it connected to, what are the alternatives. So relations travel\nwith the record instead of needing a second request.",
+        "properties": {
+          "archive_reason": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ArchiveReason"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "canonical_url": {
+            "format": "uri",
+            "maxLength": 2083,
+            "minLength": 1,
+            "title": "Canonical Url",
+            "type": "string"
+          },
+          "categories": {
+            "items": {
+              "$ref": "#/components/schemas/CategorySummary"
+            },
+            "title": "Categories",
+            "type": "array"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/WebsiteKind"
+          },
+          "last_verified_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Last Verified At"
+          },
+          "launch_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Launch Date"
+          },
+          "logo_url": {
+            "anyOf": [
+              {
+                "format": "uri",
+                "maxLength": 2083,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Logo Url"
+          },
+          "long_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Long Description"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "organization_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Organization Name"
+          },
+          "primary_domain": {
+            "title": "Primary Domain",
+            "type": "string"
+          },
+          "quality_score": {
+            "anyOf": [
+              {
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Quality Score"
+          },
+          "relations": {
+            "items": {
+              "$ref": "#/components/schemas/RelationGroup"
+            },
+            "title": "Relations",
+            "type": "array"
+          },
+          "replaced_by": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EntityRef"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "screenshot_url": {
+            "anyOf": [
+              {
+                "format": "uri",
+                "maxLength": 2083,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Screenshot Url"
+          },
+          "short_description": {
+            "maxLength": 160,
+            "minLength": 10,
+            "title": "Short Description",
+            "type": "string"
+          },
+          "slug": {
+            "title": "Slug",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/PublicationStatus"
+          },
+          "technologies": {
+            "items": {
+              "$ref": "#/components/schemas/TechnologySummary"
+            },
+            "title": "Technologies",
+            "type": "array"
+          },
+          "topics": {
+            "items": {
+              "$ref": "#/components/schemas/TopicSummary"
+            },
+            "title": "Topics",
+            "type": "array"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "created_at",
+          "updated_at",
+          "name",
+          "kind",
+          "primary_domain",
+          "short_description",
+          "status",
+          "canonical_url"
+        ],
+        "title": "WebsiteDetail",
+        "type": "object"
+      },
+      "WebsiteKind": {
+        "description": "What a Website record actually is.\n\nDecision I-01: one Website entity with a kind field, instead of separate Product and\nWebsite tables.",
+        "enum": [
+          "product",
+          "tool",
+          "service",
+          "docs",
+          "community",
+          "learning",
+          "reference"
+        ],
+        "title": "WebsiteKind",
+        "type": "string"
+      },
+      "WebsiteSummary": {
+        "additionalProperties": false,
+        "description": "What a card shows. Kept small on purpose.",
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/WebsiteKind"
+          },
+          "logo_url": {
+            "anyOf": [
+              {
+                "format": "uri",
+                "maxLength": 2083,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Logo Url"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "primary_domain": {
+            "title": "Primary Domain",
+            "type": "string"
+          },
+          "quality_score": {
+            "anyOf": [
+              {
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Quality Score"
+          },
+          "short_description": {
+            "maxLength": 160,
+            "minLength": 10,
+            "title": "Short Description",
+            "type": "string"
+          },
+          "slug": {
+            "title": "Slug",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/PublicationStatus"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "created_at",
+          "updated_at",
+          "name",
+          "kind",
+          "primary_domain",
+          "short_description",
+          "status"
+        ],
+        "title": "WebsiteSummary",
+        "type": "object"
+      },
+      "WebsiteUpdate": {
+        "additionalProperties": false,
+        "description": "Partial update.\n\n`version` is required: the client sends the version it read, and the server rejects\nthe write if the row changed since then (`version_conflict`). Two editors working on\nthe same record must not silently overwrite each other.",
+        "properties": {
+          "canonical_url": {
+            "anyOf": [
+              {
+                "format": "uri",
+                "maxLength": 2083,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Canonical Url"
+          },
+          "category_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Category Ids"
+          },
+          "kind": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WebsiteKind"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "launch_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Launch Date"
+          },
+          "long_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Long Description"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Name"
+          },
+          "organization_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Organization Name"
+          },
+          "short_description": {
+            "anyOf": [
+              {
+                "maxLength": 160,
+                "minLength": 10,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Short Description"
+          },
+          "topic_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Topic Ids"
+          },
+          "version": {
+            "minimum": 1,
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "version"
+        ],
+        "title": "WebsiteUpdate",
+        "type": "object"
       }
     }
   },
@@ -86,6 +1476,28 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/v1/meta/enums": {
+      "get": {
+        "description": "Everything a client needs to render filters, labels and legends.",
+        "operationId": "enums_api_v1_meta_enums_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnumsResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Enums",
+        "tags": [
+          "meta"
+        ]
+      }
+    },
     "/health/info": {
       "get": {
         "operationId": "info_health_info_get",
