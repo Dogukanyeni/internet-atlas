@@ -12,7 +12,7 @@ Phase definitions and exit criteria come from `Internet_Atlas_Detayli_Proje_Doku
 | 2 | User flows | I | ✅ | [02-user-flows.md](02-user-flows.md) |
 | 3 | Information architecture | I | ✅ | [03-information-architecture.md](03-information-architecture.md) |
 | 4 | Architecture decisions | II | ✅ | [04-architecture.md](04-architecture.md) + [14 ADRs](../adr/) |
-| 5 | Repository and standards | II | 🔵 | [05-repository.md](05-repository.md) — all checks green; waiting on Docker for `make up` |
+| 5 | Repository and standards | II | ✅ | [05-repository.md](05-repository.md) |
 | 6 | Domain model and contracts | II | ✅ | [06-domain-contracts.md](06-domain-contracts.md) |
 | 7 | Database core | II | ⬜ | Migrations, ORM layer, seed script, DB integration tests |
 | 8 | Authentication | III | ⬜ | Register/login, email verification, roles, auth tests |
@@ -91,6 +91,7 @@ Phase definitions and exit criteria come from `Internet_Atlas_Detayli_Proje_Doku
 | R-05 | Pull requests carry the Definition of Done and the vision guardrails | 5 |
 | R-06 | CI is path-aware, with one always-running gate job | 5 |
 | R-07 | Structured logging and request ids exist from the first commit | 5 |
+| R-08 | Local PostgreSQL is published on host port **5433**, to avoid a native install on 5432 | 5 |
 | C-01 | Ids are **UUIDv7**, generated in the application (answers Q10) | 6 |
 | C-02 | Public responses never expose `created_by`, `updated_by` or `version` | 6 |
 | C-03 | Updates use optimistic locking through `version` | 6 |

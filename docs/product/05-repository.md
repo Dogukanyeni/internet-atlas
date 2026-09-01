@@ -159,10 +159,20 @@ make check
 - [x] Dependencies install and all checks pass on the developer machine
       (ruff, mypy strict, 5 tests, eslint, tsc, production build)
 - [x] Pushed to GitHub: <https://github.com/Dogukanyeni/internet-atlas>
-- [ ] **Open:** Docker Desktop installed, so `make up` and a real database connection
-      can be verified (see [LOCAL_SETUP.md](../LOCAL_SETUP.md))
+- [x] Docker services running and reachable: `/health/ready` returns
+      `{"status":"ready","dependencies":{"database":true,"redis":true}}`
 
-**Phase 5 is closed once Docker runs the local services. Next: Phase 6 - Domain model and data contracts.**
+**Phase 5 is closed.**
+
+### Note added on closing
+
+The first real database connection failed with `password authentication failed`. The
+cause was not our configuration: a native **PostgreSQL 18** Windows service already
+owned port 5432, so the application was talking to that server instead of the container.
+
+Fix: the container now publishes **5433** on the host. We did not stop the native
+service, because it belongs to the developer's other work. Inside Docker the port is
+still 5432, so nothing about production changes.
 
 ---
 

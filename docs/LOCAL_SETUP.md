@@ -75,7 +75,7 @@ This starts three containers:
 
 | Service | Port | What it is |
 |---|---|---|
-| PostgreSQL | 5432 | The database |
+| PostgreSQL | **5433** | The database (5433 on purpose, see below) |
 | Redis | 6379 | Cache, rate limits, job queue |
 | MinIO | 9000 / 9001 | S3-compatible file storage (console on 9001) |
 
@@ -128,9 +128,21 @@ Use Git Bash, not PowerShell. Make comes with Git for Windows.
 **`docker: command not found` after installing Docker Desktop**
 Docker Desktop must be running. Open it and wait for the whale icon to stop moving.
 
-**Port 5432 is already in use**
-Another PostgreSQL is running on your machine. Stop it, or change the port in
-`docker-compose.yml` and in `DATABASE_URL`.
+**Why is PostgreSQL on 5433 and not 5432?**
+Because a native PostgreSQL installed on Windows usually owns 5432, and Docker will
+happily publish the port anyway. Your app then connects to the *wrong* database and the
+error looks nothing like the cause - normally `password authentication failed`. Using
+5433 removes the whole class of problem and leaves any native PostgreSQL untouched.
+
+To check what owns a port:
+
+```powershell
+Get-NetTCPConnection -LocalPort 5432 -State Listen | ForEach-Object { (Get-Process -Id $_.OwningProcess).ProcessName }
+```
+
+**`password authentication failed for user "atlas"`**
+Something other than our container is answering on that port. See the note above, and
+make sure `DATABASE_URL` in `.env` uses port **5433**.
 
 **The API says `ATLAS_SECRET_KEY must be at least 32 characters`**
 Open `.env` and set a real value. Generate one:
@@ -141,6 +153,20 @@ python -c "import secrets; print(secrets.token_urlsafe(48))"
 
 **`make api` says the database is not reachable**
 Run `make up` first, and wait a few seconds for PostgreSQL to become healthy.
+Check it directly:
+
+```bash
+docker compose exec postgres psql -U atlas -d atlas -c "select 1"
+```
+
+**The test database is missing**
+Tests use a separate `atlas_test` database. It is created automatically when the
+postgres volume is built for the first time. If your volume already existed, create it
+once by hand:
+
+```bash
+docker compose exec postgres psql -U atlas -d atlas -c "CREATE DATABASE atlas_test OWNER atlas;"
+```
 
 **Line ending warnings in git**
 Expected on Windows. `.editorconfig` and the pre-commit hooks keep files as LF.
